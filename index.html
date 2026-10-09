@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0b1020">
+  <meta name="description" content="NexaController is a touch-friendly virtual controller interface demo.">
+  <title>NexaController</title>
+  <style>
+    :root { color-scheme: dark; --bg:#0b1020; --panel:#141b2f; --panel2:#1c2740; --ink:#f4f7ff; --muted:#9aa8c4; --accent:#7c9cff; --line:#2b3856; --button-size:58px; }
+    * { box-sizing:border-box; }
+    body { margin:0; min-height:100vh; background:radial-gradient(ellipse at top,#172443 0%,var(--bg) 58%); color:var(--ink); font:16px/1.45 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; padding:env(safe-area-inset-top) 14px env(safe-area-inset-bottom); }
+    button,input { font:inherit; }
+    button { color:inherit; cursor:pointer; touch-action:none; -webkit-tap-highlight-color:transparent; }
+    .wrap { max-width:980px; margin:0 auto; }
+    header { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:18px 2px 14px; }
+    .brand { display:flex; align-items:center; gap:11px; }
+    .logo { width:42px;height:42px;border-radius:14px;display:grid;place-items:center;background:linear-gradient(135deg,#82a5ff,#8d6bff);font-size:23px;font-weight:900;color:#0b1020; }
+    h1 { margin:0;font-size:clamp(1.3rem,4vw,1.9rem);letter-spacing:-.04em; }
+    .sub { color:var(--muted);font-size:.85rem; }
+    .status { display:flex;align-items:center;gap:8px;padding:8px 11px;border:1px solid #67552a;background:#2b2415;border-radius:999px;font-size:.78rem;color:#ffe3a0;white-space:nowrap; }
+    .dot { width:8px;height:8px;border-radius:50%;background:#ffc857; }
+    .notice { padding:12px 14px;border:1px solid #594a29;background:#211e19;border-radius:14px;color:#f3dfb7;font-size:.9rem;margin-bottom:14px; }
+    .notice strong { color:#fff0c8; }
+    .toolbar { display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:0 0 14px; }
+    .tool { border:1px solid var(--line);background:var(--panel);border-radius:11px;padding:9px 12px; }
+    .tool:hover,.tool:focus-visible { border-color:var(--accent);outline:none; }
+    .size-control { display:flex;align-items:center;gap:10px;color:var(--muted);font-size:.88rem; }
+    input[type=range] { width:120px;accent-color:var(--accent); }
+    .deck { display:grid;grid-template-columns:1fr 1fr;gap:14px; }
+    .zone { background:linear-gradient(180deg,#151e34,#11182a);border:1px solid var(--line);border-radius:22px;padding:clamp(12px,3vw,24px);min-height:290px; }
+    .zone h2 { font-size:.88rem;text-transform:uppercase;letter-spacing:.13em;color:var(--muted);margin:0 0 18px;text-align:center; }
+    .dpad-area,.face-area { height:210px;display:flex;align-items:center;justify-content:center;position:relative; }
+    .dpad { width:calc(var(--button-size) * 2.35);height:calc(var(--button-size) * 2.35);position:relative; }
+    .key { display:grid;place-items:center;border:1px solid #465574;background:linear-gradient(180deg,#303d59,#202b44);box-shadow:0 5px 0 #101729, inset 0 1px 0 #ffffff12;border-radius:13px;user-select:none;font-weight:800; }
+    .key:active,.key.pressed { transform:translateY(2px);box-shadow:0 2px 0 #101729,inset 0 0 0 2px #8daaff;filter:brightness(1.25); }
+    .dpad .key { position:absolute;width:var(--button-size);height:var(--button-size);font-size:1.35rem; }
+    .up { left:50%;top:0;transform:translateX(-50%); }.down { left:50%;bottom:0;transform:translateX(-50%); }.left { left:0;top:50%;transform:translateY(-50%); }.right { right:0;top:50%;transform:translateY(-50%); }
+    .up:active,.down:active { transform:translateX(-50%) translateY(2px); }.left:active,.right:active { transform:translateY(calc(-50% + 2px)); }
+    .face { width:var(--button-size);height:var(--button-size);border-radius:50%;position:absolute;font-size:1.2rem;font-weight:800; }
+    .triangle { top:0;left:50%;transform:translateX(-50%);color:#8ef0bd; }.circle { right:0;top:50%;transform:translateY(-50%);color:#ff8ca4; }.cross { bottom:0;left:50%;transform:translateX(-50%);color:#83c7ff; }.square { left:0;top:50%;transform:translateY(-50%);color:#d4a4ff; }
+    .triangle:active,.cross:active { transform:translateX(-50%) translateY(2px); }.circle:active,.square:active { transform:translateY(calc(-50% + 2px)); }
+    .sticks { display:grid;grid-template-columns:1fr 1fr;gap:16px; }
+    .stick-wrap { display:grid;justify-items:center;gap:8px;color:var(--muted);font-size:.8rem; }
+    .stick { width:min(34vw,145px);height:min(34vw,145px);max-width:145px;max-height:145px;min-width:95px;min-height:95px;border-radius:50%;background:radial-gradient(circle,#273550,#11182a 72%);border:2px solid #354462;position:relative;touch-action:none; }
+    .knob { width:43%;height:43%;border-radius:50%;position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);background:linear-gradient(145deg,#6b7d9e,#293852);border:2px solid #8396ba;box-shadow:0 5px 12px #0008;pointer-events:none; }
+    .shoulders { display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:0 0 14px; }
+    .shoulder { padding:12px 4px;border-radius:12px;min-height:48px;font-size:.9rem; }
+    .center-keys { display:flex;justify-content:center;gap:12px;margin:14px 0; }
+    .center-keys .key { padding:8px 18px;min-height:38px;font-size:.78rem;touch-action:manipulation; }
+    .bottom { margin-top:14px;display:grid;grid-template-columns:1fr 1fr;gap:14px; }
+    .card { border:1px solid var(--line);border-radius:16px;background:#11182a;padding:14px; }
+    .card h3 { margin:0 0 8px;font-size:1rem; }
+    .card p { color:var(--muted);font-size:.87rem;margin:0 0 10px; }
+    #readout { white-space:pre-wrap;overflow-wrap:anywhere;font:12px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;color:#c6d4f2; }
+    dialog { max-width:min(540px,calc(100% - 28px));background:#141b2f;color:var(--ink);border:1px solid var(--line);border-radius:18px;padding:22px; }
+    dialog::backdrop { background:#02050bcc; }
+    dialog h2 { margin-top:0; }
+    dialog p,dialog li { color:#c1cbe0;font-size:.93rem; }
+    footer { color:#7483a2;text-align:center;font-size:.78rem;padding:18px 0 24px; }
+    @media(max-width:620px) { body{padding-left:10px;padding-right:10px} header{align-items:flex-start}.status{font-size:.68rem;padding:7px 9px}.deck{gap:9px}.zone{padding:10px 6px;min-height:260px;border-radius:17px}.zone h2{font-size:.72rem;margin-bottom:12px}.dpad-area,.face-area{height:175px}.shoulders{gap:5px}.shoulder{font-size:.76rem;padding:10px 2px}.bottom{grid-template-columns:1fr}.sub{font-size:.75rem} }
+    @media(prefers-reduced-motion:reduce) { * { scroll-behavior:auto!important;transition:none!important; } }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="brand"><div class="logo" aria-hidden="true">N</div><div><h1>NexaController</h1><div class="sub">Touch + keyboard controller demo</div></div></div>
+      <div class="status" role="status"><span class="dot"></span> Demo mode — no console connected</div>
+    </header>
+    <div class="notice"><strong>Important:</strong> This page is a controller-interface demo. It does not connect to or control a real PS4. A normal USB cable and a webpage alone cannot turn an iPhone into a PS4 controller.</div>
+    <div class="toolbar">
+      <button class="tool" id="helpBtn" type="button">Connection help</button>
+      <button class="tool" id="releaseBtn" type="button">Release all buttons</button>
+      <button class="tool" id="vibrateBtn" type="button">Test haptics</button>
+      <label class="size-control" for="sizeRange">Button size <input id="sizeRange" type="range" min="44" max="76" value="58"><span id="sizeValue">58px</span></label>
+    </div>
+    <div class="shoulders" aria-label="Shoulder buttons">
+      <button class="key shoulder" data-button="L2" type="button">L2</button>
+      <button class="key shoulder" data-button="L1" type="button">L1</button>
+      <button class="key shoulder" data-button="R1" type="button">R1</button>
+      <button class="key shoulder" data-button="R2" type="button">R2</button>
+    </div>
+    <main class="deck">
+      <section class="zone">
+        <h2>Directional pad</h2>
+        <div class="dpad-area"><div class="dpad">
+          <button class="key up" data-button="up" aria-label="D-pad up" type="button">▲</button>
+          <button class="key down" data-button="down" aria-label="D-pad down" type="button">▼</button>
+          <button class="key left" data-button="left" aria-label="D-pad left" type="button">◀</button>
+          <button class="key right" data-button="right" aria-label="D-pad right" type="button">▶</button>
+        </div></div>
+        <div class="center-keys"><button class="key" data-button="share" type="button">SHARE</button><button class="key" data-button="options" type="button">OPTIONS</button></div>
+      </section>
+      <section class="zone">
+        <h2>Action buttons</h2>
+        <div class="face-area">
+          <button class="key face triangle" data-button="triangle" aria-label="Triangle" type="button">△</button>
+          <button class="key face circle" data-button="circle" aria-label="Circle" type="button">○</button>
+          <button class="key face cross" data-button="cross" aria-label="Cross" type="button">×</button>
+          <button class="key face square" data-button="square" aria-label="Square" type="button">□</button>
+        </div>
+        <div class="center-keys"><button class="key" data-button="ps" type="button">PS</button></div>
+      </section>
+    </main>
+    <section class="zone" style="margin-top:14px">
+      <h2>Analog sticks</h2>
+      <div class="sticks">
+        <div class="stick-wrap"><div class="stick" data-stick="left" aria-label="Left analog stick"><div class="knob"></div></div><span>L3 · Left stick</span><button class="tool" data-button="L3" type="button">Press L3</button></div>
+        <div class="stick-wrap"><div class="stick" data-stick="right" aria-label="Right analog stick"><div class="knob"></div></div><span>R3 · Right stick</span><button class="tool" data-button="R3" type="button">Press R3</button></div>
+      </div>
+    </section>
+    <div class="bottom">
+      <section class="card"><h3>Input state</h3><p>Shows local demo input only; nothing is sent to a console.</p><div id="readout" aria-live="polite">No buttons pressed</div></section>
+      <section class="card"><h3>Keyboard controls</h3><p>Use arrow keys or WASD for directions. Enter = Cross, Backspace = Circle, Q = Square, E = Triangle, U/O = L1/R1, I/P = L2/R2, Space = PS. Click here first if keyboard input is not responding.</p><p>Touch buttons work on phones and tablets. Keep the page open while testing.</p></section>
+    </div>
+    <footer>NexaController · local demo · no tracking · no console connection implemented</footer>
+  </div>
+  <dialog id="helpDialog">
+    <h2>Connection help</h2>
+    <p><strong>This version is a UI demo only.</strong> It does not send controller inputs over USB or Bluetooth and does not implement PS Remote Play.</p>
+    <ul>
+      <li>A USB-A to USB-C cable by itself does not make a webpage act as a DualShock 4 controller.</li>
+      <li>Remote Play requires being enabled and configured on the PS4, plus a supported client and account setup.</li>
+      <li>If the console's only working controller is unavailable and Remote Play is not enabled, you may need to borrow a compatible controller briefly to configure it.</li>
+    </ul>
+    <button class="tool" id="closeHelp" type="button">Got it</button>
+  </dialog>
+  <script type="module">
+    import { ControllerCore } from "./src/core.js";
+    const core = new ControllerCore();
+    const activePointers = new Map();
+    const keyboardSources = new Map();
+    const readout = document.querySelector("#readout");
+    const helpDialog = document.querySelector("#helpDialog");
+
+    function render() {
+      const state = core.snapshot();
+      document.querySelectorAll("[data-button]").forEach((el) => {
+        el.classList.toggle("pressed", core.isPressed(el.dataset.button));
+        el.setAttribute("aria-pressed", String(core.isPressed(el.dataset.button)));
+      });
+      readout.textContent = state.buttons.length
+        ? "Pressed: " + state.buttons.join(", ") + "\nLeft stick: " + JSON.stringify(state.sticks.left) + "\nRight stick: " + JSON.stringify(state.sticks.right)
+        : "No buttons pressed\nLeft stick: " + JSON.stringify(state.sticks.left) + "\nRight stick: " + JSON.stringify(state.sticks.right);
+    }
+
+    document.querySelectorAll("[data-button]").forEach((el, index) => {
+      const button = el.dataset.button;
+      el.addEventListener("pointerdown", (event) => {
+        if (el.dataset.toggle === "true") {
+          core.press(button, "toggle");
+          render();
+          return;
+        }
+        event.preventDefault();
+        const source = "pointer:" + (event.pointerId ?? index);
+        activePointers.set(event.pointerId, { button, source });
+        try { el.setPointerCapture(event.pointerId); } catch {}
+        core.press(button, source);
+        render();
+      });
+      const endPointer = (event) => {
+        const held = activePointers.get(event.pointerId);
+        if (!held) return;
+        core.release(held.button, held.source);
+        activePointers.delete(event.pointerId);
+        render();
+      };
+      el.addEventListener("pointerup", endPointer);
+      el.addEventListener("pointercancel", endPointer);
+      el.addEventListener("lostpointercapture", endPointer);
+      el.addEventListener("contextmenu", (event) => event.preventDefault());
+    });
+
+    const keyMap = {
+      ArrowUp:"up", w:"up", ArrowDown:"down", s:"down",
+      ArrowLeft:"left", a:"left", ArrowRight:"right", d:"right",
+      Enter:"cross", Backspace:"circle", q:"square", e:"triangle",
+      u:"L1", o:"R1", i:"L2", p:"R2", " ":"ps"
+    };
+    window.addEventListener("keydown", (event) => {
+      const button = keyMap[event.key] ?? keyMap[event.key.toLowerCase()];
+      if (!button || event.repeat) return;
+      if (["ArrowUp","ArrowDown","ArrowLeft","ArrowRight"," ","Backspace","Enter"].includes(event.key)) event.preventDefault();
+      const source = "keyboard:" + event.key.toLowerCase();
+      keyboardSources.set(event.key, { button, source });
+      core.press(button, source);
+      render();
+    });
+    window.addEventListener("keyup", (event) => {
+      const held = keyboardSources.get(event.key);
+      if (!held) return;
+      core.release(held.button, held.source);
+      keyboardSources.delete(event.key);
+      render();
+    });
+
+    function releaseEverything() {
+      activePointers.clear();
+      keyboardSources.clear();
+      core.releaseAll();
+      document.querySelectorAll(".stick").forEach((el) => {
+        el.querySelector(".knob").style.transform = "translate(-50%,-50%)";
+      });
+      render();
+    }
+    window.addEventListener("blur", releaseEverything);
+    document.addEventListener("visibilitychange", () => { if (document.hidden) releaseEverything(); });
+    document.querySelector("#releaseBtn").addEventListener("click", releaseEverything);
+    document.querySelector("#helpBtn").addEventListener("click", () => helpDialog.showModal());
+    document.querySelector("#closeHelp").addEventListener("click", () => helpDialog.close());
+    document.querySelector("#sizeRange").addEventListener("input", (event) => {
+      const size = Number(event.target.value);
+      document.documentElement.style.setProperty("--button-size", size + "px");
+      document.querySelector("#sizeValue").textContent = size + "px";
+    });
+    document.querySelector("#vibrateBtn").addEventListener("click", () => {
+      if ("vibrate" in navigator) navigator.vibrate([35, 35, 35]);
+      else {
+        const button = document.querySelector("#vibrateBtn");
+        button.textContent = "Haptics not supported here";
+        setTimeout(() => { button.textContent = "Test haptics"; }, 1800);
+      }
+    });
+
+    document.querySelectorAll("[data-stick]").forEach((stick) => {
+      const name = stick.dataset.stick;
+      const knob = stick.querySelector(".knob");
+      let pointerId = null;
+      const move = (event) => {
+        if (pointerId !== event.pointerId) return;
+        const rect = stick.getBoundingClientRect();
+        const radius = Math.min(rect.width, rect.height) * 0.36;
+        const dx = (event.clientX - (rect.left + rect.width / 2)) / radius;
+        const dy = (event.clientY - (rect.top + rect.height / 2)) / radius;
+        const value = core.setStick(name, dx, dy);
+        knob.style.transform = "translate(calc(-50% + " + (value.x * radius) + "px), calc(-50% + " + (value.y * radius) + "px))";
+        render();
+      };
+      stick.addEventListener("pointerdown", (event) => {
+        pointerId = event.pointerId;
+        try { stick.setPointerCapture(pointerId); } catch {}
+        move(event);
+      });
+      stick.addEventListener("pointermove", move);
+      const reset = (event) => {
+        if (pointerId !== event.pointerId) return;
+        pointerId = null;
+        core.setStick(name, 0, 0, 0);
+        knob.style.transform = "translate(-50%,-50%)";
+        render();
+      };
+      stick.addEventListener("pointerup", reset);
+      stick.addEventListener("pointercancel", reset);
+      stick.addEventListener("lostpointercapture", reset);
+    });
+    render();
+  </script>
+</body>
+</html>

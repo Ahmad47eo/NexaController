@@ -1,0 +1,14 @@
+{
+  "name": "nexacontroller",
+  "version": "1.0.0",
+  "private": true,
+  "description": "A local virtual controller UI demo; no real PS4 connection is implemented.",
+  "type": "module",
+  "scripts": {
+    "test": "node --test",
+    "serve": "python -m http.server 8080"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
